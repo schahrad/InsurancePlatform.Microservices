@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  identityservice:
+    build: ./src/IdentityService
+    container_name: identityservice
+    ports:
+      - "5001:8080"
+  customerservice:
+    build: ./src/CustomerService
+    container_name: customerservice
+    ports:
+      - "5002:8080"
+  policyservice:
+    build: ./src/PolicyService
+    container_name: policyservice
+    ports:
+      - "5003:8080"
+  claimsservice:
+    build: ./src/ClaimsService
+    container_name: claimsservice
+    ports:
+      - "5004:8080"
+  gatewayapi:
+    build: ./src/Gateway.Api
+    container_name: gatewayapi
+    ports:
+      - "5000:8080"
+  webclient:
+    build: ./src/WebClient
+    container_name: webclient
+    ports:
+      - "5005:8080"
