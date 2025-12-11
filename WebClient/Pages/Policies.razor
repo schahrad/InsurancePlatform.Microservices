@@ -1,0 +1,82 @@
+﻿@page "/policies"
+@using WebClient.ViewModels
+
+<PageTitle>My Policies</PageTitle>
+
+<h3>My Policies</h3>
+
+@if (policies is null)
+{
+    <p>Loading policies...</p>
+}
+else if (policies.Count == 0)
+{
+    <p>No policies found.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Policy No.</th>
+                <th>Product</th>
+                <th>Status</th>
+                <th>Premium (€/month)</th>
+                <th>Valid From</th>
+                <th>Valid To</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in policies)
+            {
+                <tr>
+                    <td>@p.PolicyNumber</td>
+                    <td>@p.ProductName</td>
+                    <td>@p.Status</td>
+                    <td>@p.Premium.ToString("0.00")</td>
+                    <td>@p.ValidFrom.ToShortDateString()</td>
+                    <td>@p.ValidTo.ToShortDateString()</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<PolicyViewModel>? policies;
+
+    protected override void OnInitialized()
+    {
+        // Dummy data for now – later we will load this from Gateway.Api
+        policies = new()
+        {
+            new PolicyViewModel
+            {
+                PolicyNumber = "P-2025-0001",
+                ProductName = "Kfz-Haftpflicht",
+                Status = "Active",
+                Premium = 49.90m,
+                ValidFrom = new DateTime(2024, 1, 1),
+                ValidTo = new DateTime(2025, 12, 31)
+            },
+            new PolicyViewModel
+            {
+                PolicyNumber = "P-2025-0002",
+                ProductName = "Hausratversicherung",
+                Status = "Active",
+                Premium = 19.50m,
+                ValidFrom = new DateTime(2024, 3, 1),
+                ValidTo = new DateTime(2025, 2, 28)
+            },
+            new PolicyViewModel
+            {
+                PolicyNumber = "P-2025-0003",
+                ProductName = "Privathaftpflicht",
+                Status = "Cancelled",
+                Premium = 8.90m,
+                ValidFrom = new DateTime(2023, 5, 1),
+                ValidTo = new DateTime(2024, 4, 30)
+            }
+        };
+    }
+}
