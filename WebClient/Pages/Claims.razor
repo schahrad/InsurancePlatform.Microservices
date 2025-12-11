@@ -1,0 +1,63 @@
+﻿@page "/claims"
+@using WebClient.ViewModels
+
+<PageTitle>My Claims</PageTitle>
+
+<h3>My Claims</h3>
+
+@if (claims is null)
+{
+    <p>Loading claims...</p>
+}
+else if (claims.Count == 0)
+{
+    <p>No claims submitted yet.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Claim No.</th>
+                <th>Policy No.</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Reported On</th>
+                <th>Amount (€)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in claims)
+            {
+                <tr>
+                    <td>@c.ClaimNumber</td>
+                    <td>@c.PolicyNumber</td>
+                    <td>@c.Type</td>
+                    <td>@c.Status</td>
+                    <td>@c.ReportedOn.ToShortDateString()</td>
+                    <td>@c.Amount.ToString("0.00")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<ClaimViewModel>? claims;
+
+    protected override void OnInitialized()
+    {
+        claims = new()
+        {
+            new ClaimViewModel
+            {
+                ClaimNumber = "C-2025-0001",
+                PolicyNumber = "P-2025-0001",
+                Type = "Kfz-Schaden",
+                Status = "In Review",
+                ReportedOn = new DateTime(2025, 1, 15),
+                Amount = 1200.00m
+            }
+        };
+    }  
+}

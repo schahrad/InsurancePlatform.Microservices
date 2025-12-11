@@ -1,7 +1,38 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Dashboard</PageTitle>
 
-<h1>Hello, world!</h1>
+<h3>Dashboard</h3>
 
-Welcome to your new app.
+<p>Welcome to the Insurance Platform demo.</p>
+
+<div class="row">
+    <div class="col-md-4">
+        <NavLink class="text-reset text-decoration-none" href="policies">
+            <div class="card p-3 mb-3">
+                <h5>Total policies</h5>
+                <p class="display-6">3</p>
+            </div>
+        </NavLink>
+    </div>
+
+    <div class="col-md-4">
+        <NavLink class="text-reset text-decoration-none" href="claims">
+            <div class="card p-3 mb-3">
+                <h5>Open claims</h5>
+                <p class="display-6">1</p>
+            </div>
+            </NavLink>       
+    </div>
+
+    <div class="col-md-4">
+        <NavLink class="text-reset text-decoration-none" href="">
+        <div class="card p-3 mb-3">
+            <h5>
+                Next renewal
+            </h5>
+            <p>01.03.2026 – Kfz Haftpflicht</p>
+            </div>
+        </NavLink>        
+    </div>
+</div>
