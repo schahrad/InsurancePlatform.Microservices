@@ -11,4 +11,11 @@ The goal of this project is to demonstrate a professional, production-style arch
 - A Blazor WebAssembly UI as presentation layer
 - Clean separation between presentation, business logic, and data access
 
-> Status: Early development (solution structure + initial Blazor UI are in place; business logic, databases, and IdP integration are being added step by step).
+># Current status
+
+- IdentityService:
+  - ASP.NET Core Identity + OpenIddict configured.
+  - Client credentials flow tested via Postman (/connect/token).
+- WebClient (Blazor WASM):
+  - Basic dashboard, policies and claims demo pages.
+
