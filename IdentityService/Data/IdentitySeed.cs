@@ -1,5 +1,8 @@
-﻿using OpenIddict.Abstractions;
+﻿using IdentityService.Models;
+using Microsoft.AspNetCore.Identity;
+using OpenIddict.Abstractions;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+
 
 namespace IdentityService.Data
 {
@@ -10,6 +13,23 @@ namespace IdentityService.Data
     {
         public static async Task SeedAsync(IServiceProvider services)
         {
+            var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+
+            var user = await userManager.FindByEmailAsync("demo@local.test");
+            if (user is null)
+            {
+                user = new ApplicationUser
+                {
+                    UserName = "demo@local.test",
+                    Email = "demo@local.test",
+                    EmailConfirmed = true,
+                    FirstName = "Demo",
+                    LastName = "User"
+                };
+
+                await userManager.CreateAsync(user, "Pass123$"); // for dev only
+            }
+
             var scopeManager = services.GetRequiredService<IOpenIddictScopeManager>();
             var applicationManager = services.GetRequiredService<IOpenIddictApplicationManager>();
 
@@ -39,6 +59,47 @@ namespace IdentityService.Data
                     }
                 });
             }
+
+            // Blazor WebClient (public SPA client)
+            if (await applicationManager.FindByClientIdAsync("webclient") is null)
+            {
+                await applicationManager.CreateAsync(new OpenIddictApplicationDescriptor
+                {
+                    ClientId = "webclient",
+                    DisplayName = "Blazor WebClient",
+                    ClientType = ClientTypes.Public, // SPA cannot keep a secret
+
+                    RedirectUris =
+                        {
+                            new Uri("https://localhost:7281/authentication/login-callback")
+                        },
+                    PostLogoutRedirectUris =
+                        {
+                            new Uri("https://localhost:7281/") // back to root after logout
+                        },
+
+                    Permissions =
+        {
+            Permissions.Endpoints.Authorization,
+            Permissions.Endpoints.Token,
+            Permissions.Endpoints.EndSession,
+            Permissions.GrantTypes.AuthorizationCode,
+            Permissions.GrantTypes.RefreshToken,
+            Permissions.ResponseTypes.Code,
+            //Permissions.Scopes.OpenId,
+            Permissions.Prefixes.Scope + "openid",
+            Permissions.Scopes.Profile,
+            Permissions.Scopes.Email,
+            Permissions.Prefixes.Scope + "api"
+        },
+
+                    Requirements =
+        {
+            Requirements.Features.ProofKeyForCodeExchange // PKCE
+        }
+                });
+            }
+
         }
     }
 }

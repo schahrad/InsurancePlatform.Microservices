@@ -2,7 +2,6 @@
 using IdentityService.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using OpenIddict.Validation.AspNetCore;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace IdentityService.Infrastructure
@@ -20,13 +19,19 @@ namespace IdentityService.Infrastructure
                 options.UseSqlServer(connectionString);
             });
 
-            // ASP.NET Core Identity
+            // ASP.NET Core Identity (cookie auth)
             services
                 .AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-            // OpenIddict configuration
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.LoginPath = "/Account/Login";  // where OpenIddict redirects unauthenticated users
+            });
+
+
+            // OpenIddict configuration – server only (NO validation here)
             services.AddOpenIddict()
                 .AddCore(options =>
                 {
@@ -36,36 +41,42 @@ namespace IdentityService.Infrastructure
                 // Server: token issuing
                 .AddServer(options =>
                 {
+                    //set issuer to the base URL of IdentityService
+                    var issuer = configuration["OpenIddict:Issuer"] ?? "https://localhost:7121/";
+                    options.SetIssuer(new Uri(issuer, UriKind.Absolute));
+
                     // Endpoints
+                    options.SetAuthorizationEndpointUris("/connect/authorize");
                     options.SetTokenEndpointUris("/connect/token");
+                    options.SetEndSessionEndpointUris("/connect/logout");
 
-                    options.AllowClientCredentialsFlow();
+                    // Allow interactive code flow + refresh tokens + client_credentials (for Gateway.Api)
+                    options
+                        .AllowAuthorizationCodeFlow()
+                        .RequireProofKeyForCodeExchange()
+                        .AllowRefreshTokenFlow()
+                        .AllowClientCredentialsFlow();
 
-                    options.AddDevelopmentEncryptionCertificate()
-                           .AddDevelopmentSigningCertificate();
+                    // Dev certs + disable access token encryption
+                    options
+                        .AddDevelopmentEncryptionCertificate()
+                        .AddDevelopmentSigningCertificate()
+                        .DisableAccessTokenEncryption();
 
-                    // Register scopes if needed
-                    options.RegisterScopes(Scopes.OpenId, "api");
+                    // Register scopes 
+                    options.RegisterScopes(
+                                             Scopes.OpenId,
+                                             Scopes.Profile,
+                                             Scopes.Email,
+                                             "api"
+                                         );
 
                     // ASP.NET Core host integration
                     options.UseAspNetCore()
-                           .EnableTokenEndpointPassthrough();
-                })
-                // Validation: so APIs can validate the tokens
-                .AddValidation(options =>
-                {
-                    options.UseLocalServer();
-                    options.UseAspNetCore();
+                           .EnableAuthorizationEndpointPassthrough();
+                           //.EnableTokenEndpointPassthrough()
+                           //.EnableEndSessionEndpointPassthrough();
                 });
-
-            // 4) Authentication/Authorization for this service
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
-            });
-
-            services.AddAuthorization();
 
             return services;
         }

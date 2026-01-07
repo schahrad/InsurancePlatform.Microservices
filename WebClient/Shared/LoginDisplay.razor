@@ -1,0 +1,36 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager Navigation
+
+<AuthorizeView>
+    <Authorized>
+        <a class="nav-link" href="#" @onclick="HandleLogout" @onclick:preventDefault="true">
+            <span>Hello, @context.User.Identity?.Name!</span> | Logout
+        </a>
+    </Authorized>
+    <NotAuthorized>
+        <a class="nav-link" href="#" @onclick="HandleLogin" @onclick:preventDefault="true">
+            Login
+        </a>
+    </NotAuthorized>
+    <Authorizing>
+        <a class="nav-link" href="#" @onclick="HandleLogin" @onclick:preventDefault="true" style="color: #d7d7d7;">
+            Login
+        </a>
+    </Authorizing>
+</AuthorizeView>
+
+@code {
+    private void HandleLogin(MouseEventArgs e)
+    {
+        Navigation.NavigateTo("authentication/login");
+    }
+
+    private void HandleLogout(MouseEventArgs e)
+    {
+        Navigation.NavigateTo("authentication/logout");
+    }
+}
+
+
+
+

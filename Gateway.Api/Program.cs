@@ -3,20 +3,25 @@ using OpenIddict.Validation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var identityAuthority = builder.Configuration["Identity:Authority"]
+                       ?? throw new InvalidOperationException("Identity:Authority not configured.");
+
+builder.Services.AddOpenIddict()
+    .AddValidation(options =>
+    {
+        options.SetIssuer(identityAuthority);
+        options.AddAudiences("api");
+        options.UseSystemNetHttp();
+        options.UseAspNetCore();
+    });
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
 });
 
-builder.Services.AddOpenIddict()
-    .AddValidation(options =>
-    {
-        options.SetIssuer("https://localhost:7121/");
-        options.AddAudiences("api"); // or matching your scopes/audience
-        options.UseSystemNetHttp();
-        options.UseAspNetCore();
-    });
+builder.Services.AddAuthorization();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -32,12 +37,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapGet("/secure-test", [Authorize] () => "You are authenticated");
-
-
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapGet("/secure-test", [Authorize] () => "You are authenticated");
 
 app.MapControllers();
 
